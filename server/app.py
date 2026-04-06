@@ -241,6 +241,34 @@ async def get_state():
     )
 
 
+import json
+from huggingface_hub import InferenceClient
+
+hf_token = os.environ.get("HF_TOKEN")
+# We initialize the client if the token exists. Otherwise we can initialize without it, but HF spaces injects it natively.
+hf_client = InferenceClient(model="Qwen/Qwen2.5-72B-Instruct", token=hf_token)
+
+class AgentRequest(BaseModel):
+    prompt: str
+
+@app.post("/api/agent")
+async def run_agent(req: AgentRequest):
+    """
+    Secure backend proxy for LLM execution via Hugging Face Inference API.
+    Injects HF_TOKEN from environment securely.
+    """
+    try:
+        response = hf_client.chat_completion(
+            messages=[{"role": "user", "content": req.prompt}],
+            max_tokens=300,
+            temperature=0.4
+        )
+        content = response.choices[0].message.content
+        return {"text": content}
+    except Exception as e:
+        print("HF API Failure:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ═══════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════

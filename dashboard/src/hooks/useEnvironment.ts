@@ -3,16 +3,12 @@ import { useEnvironmentStore } from '../store/useEnvironmentStore';
 import { api } from '../services/api';
 import axios from 'axios';
 
-// Cache the discovered model so we don't spam the ListModels API every step
-let cachedGeminiModel = '';
-
 export const useEnvironment = () => {
   const store = useEnvironmentStore();
 
   const resetEnvironment = useCallback(async () => {
     try {
       store.setEnvState({ status: 'running' });
-      // Randomize the default backend environment if api accepts seed parameters, otherwise it's safe
       const responseData = await api.reset();
 
       const obs = responseData;
@@ -51,21 +47,14 @@ export const useEnvironment = () => {
       let actionType = 'read_paper';
       let content = 'all';
 
-      const apiKey = import.meta.env.GEMINI_API_KEY;
-
       const successfulExperiments = history.filter(s => s.actionType === 'run_experiment' && s.reward > 0).length;
       const ranExperiments = history.filter(s => s.actionType === 'run_experiment').length;
 
       let usedGemini = false;
       let geminiErrorMessage = '';
 
-      if (!apiKey) {
-        console.warn("Missing GEMINI_API_KEY! Make sure to refresh your browser.");
-      }
-
-      if (apiKey) {
-        try {
-          const sysPrompt = `You are an AI Research Scientist Agent navigating an OpenEnv virtual environment.
+      try {
+        const sysPrompt = `You are an AI Research Scientist Agent navigating an OpenEnv virtual environment.
 Your goal is to maximize the final score by reading papers, proposing a hypothesis, running experiments on datasets using methods, and analyzing results.
 
 Available Methods: ${JSON.stringify(envState.available_methods || ['cnn', 'mlp', 'rf'])}
@@ -83,44 +72,22 @@ Rules:
 - Iterate methodologies dynamically based on previous rewards to search for the highest accuracy!
 - End with "analyze_results" and then "final_answer" to conclude the episode.`;
 
-          // DYNAMIC MODEL DISCOVERY
-          if (!cachedGeminiModel) {
-            try {
-              const modelsRes = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-              const modelsList = modelsRes.data.models.map((m: any) => m.name);
+        const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:7860'}/api/agent`, {
+          prompt: sysPrompt
+        });
 
-              // Prioritize lightweight flash models natively to respect free-tier constraints and availability
-              const flashModel = modelsList.find((m: string) => m.includes('flash') && (m.includes('-lite') || m.includes('-preview')));
+        const rawText = response.data.text;
+        let cleanJsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const decision = JSON.parse(cleanJsonStr);
 
-              if (flashModel) {
-                cachedGeminiModel = flashModel.replace('models/', '');
-              } else {
-                cachedGeminiModel = modelsList[0].replace('models/', '');
-              }
-            } catch (discoveryError) {
-              console.warn("Dynamic API list models failed, defaulting:", discoveryError);
-              cachedGeminiModel = 'gemini-1.5-flash';
-            }
-          }
-
-          const response = await axios.post(`https://generativelanguage.googleapis.com/v1beta/models/${cachedGeminiModel}:generateContent?key=${apiKey}`, {
-            contents: [{ parts: [{ text: sysPrompt }] }],
-            generationConfig: { temperature: 0.4 }
-          });
-
-          const rawText = response.data.candidates[0].content.parts[0].text;
-          let cleanJsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-          const decision = JSON.parse(cleanJsonStr);
-
-          if (decision.actionType) {
-            actionType = decision.actionType;
-            content = decision.content || '';
-            usedGemini = true;
-          }
-        } catch (geminiError: any) {
-          geminiErrorMessage = geminiError.response?.data?.error?.message || geminiError.message || "Unknown error";
-          console.error(`Gemini integration failed (Model used: ${cachedGeminiModel}):`, geminiError);
+        if (decision.actionType) {
+          actionType = decision.actionType;
+          content = decision.content || '';
+          usedGemini = true;
         }
+      } catch (llmError: any) {
+        geminiErrorMessage = llmError.response?.data?.detail || llmError.message || "Unknown error";
+        console.error(`Backend LLM integration failed:`, llmError);
       }
 
       if (!usedGemini) {
@@ -139,7 +106,6 @@ Rules:
             const validMethods = envState.available_methods || ['cnn'];
             const validDatasets = envState.available_datasets || ['digits_full'];
 
-            // Randomize the fallback agent so that it performs dynamically!
             const method = validMethods[Math.floor(Math.random() * validMethods.length)];
             const dataset = validDatasets[Math.floor(Math.random() * validDatasets.length)];
             content = `${method}:${dataset}`;
@@ -162,7 +128,7 @@ Rules:
       const obs = responseData;
 
       if (!usedGemini && geminiErrorMessage) {
-        obs.message = `${obs.message}`;
+        obs.message = `[API ERROR] LLM threw error: ${geminiErrorMessage}\n\n[FALLBACK ENGINE INITIATED] ${obs.message}`;
       }
 
       const payload = obs.data || {};
