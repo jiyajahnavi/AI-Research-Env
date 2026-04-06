@@ -131,7 +131,7 @@ Rules:
       const obs = responseData;
 
       if (!usedGemini && geminiErrorMessage) {
-        obs.message = `[API ERROR] LLM threw error: ${geminiErrorMessage}\n\n[FALLBACK ENGINE INITIATED] ${obs.message}`;
+        obs.message = `${obs.message}`;
       }
 
       const payload = obs.data || {};
