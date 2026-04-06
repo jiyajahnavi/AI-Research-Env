@@ -72,7 +72,10 @@ Rules:
 - Iterate methodologies dynamically based on previous rewards to search for the highest accuracy!
 - End with "analyze_results" and then "final_answer" to conclude the episode.`;
 
-        const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:7860'}/api/agent`, {
+        const isProd = import.meta.env.PROD;
+        const apiUrl = isProd ? window.location.origin : (import.meta.env.VITE_API_URL || 'http://localhost:7860');
+
+        const response = await axios.post(`${apiUrl}/api/agent`, {
           prompt: sysPrompt
         });
 

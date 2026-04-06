@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 
-const BASE_URL = import.meta.env.VITE_API_URL;
-console.log("API URL:", BASE_URL);
+const isProd = import.meta.env.PROD;
+const BASE_URL = isProd ? window.location.origin : (import.meta.env.VITE_API_URL || 'http://localhost:7860');
+console.log("API URL Resolving to:", BASE_URL);
 
 export const api = {
   reset: async () => {
