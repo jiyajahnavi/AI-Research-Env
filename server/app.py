@@ -108,8 +108,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/", StaticFiles(directory="dashboard/dist", html=True), name="ui")
-
 # Single environment instance (stateful per session)
 env = ResearchEnvironment()
 _start_time = time.time()
@@ -268,6 +266,8 @@ async def run_agent(req: AgentRequest):
     except Exception as e:
         print("HF API Failure:", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+app.mount("/", StaticFiles(directory="dashboard/dist", html=True), name="ui")
 
 # ═══════════════════════════════════════════════════════════════
 # MAIN
