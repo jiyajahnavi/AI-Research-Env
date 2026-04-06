@@ -10,7 +10,7 @@ Endpoints:
     GET  /tasks          — List available tasks
     GET  /info           — Environment metadata
 """
-
+from fastapi.staticfiles import StaticFiles
 import os
 import time
 from typing import Optional
@@ -108,14 +108,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-async def root():
-    return {
-        "message": "AI Research Scientist Environment API",
-        "docs": "/docs",
-        "health": "/health",
-        "tasks": "/tasks"
-    }
+app.mount("/", StaticFiles(directory="dashboard/dist", html=True), name="ui")
 
 # Single environment instance (stateful per session)
 env = ResearchEnvironment()
