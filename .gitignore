@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+.env
+inference_results.json
+outputs/
+logs/
+.venv/
+venv/

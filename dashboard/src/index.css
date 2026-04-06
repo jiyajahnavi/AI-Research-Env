@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-slate-200 font-sans antialiased overflow-x-hidden;
+    /* Hide cursor for custom cursor */
+    cursor: none; 
+  }
+  
+  a, button, input, select {
+    cursor: none; 
+  }
+}
+
+.glass-panel {
+  @apply bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] shadow-soft rounded-2xl;
+}
+
+/* Custom Scrollbar for sleek UI */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700/50 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-600;
+}

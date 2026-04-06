@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-research-scientist-env"
+version = "1.0.0"
+description = "AI Research Scientist Environment for OpenEnv"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Aditya Kumar Singh"},
+]
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "httpx>=0.25.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["server*", "models*", "tasks*", "graders*", "environment*"]
