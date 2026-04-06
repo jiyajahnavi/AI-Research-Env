@@ -51,7 +51,7 @@ export const useEnvironment = () => {
       let actionType = 'read_paper';
       let content = 'all';
 
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey = import.meta.env.GEMINI_API_KEY;
 
       const successfulExperiments = history.filter(s => s.actionType === 'run_experiment' && s.reward > 0).length;
       const ranExperiments = history.filter(s => s.actionType === 'run_experiment').length;
@@ -60,7 +60,7 @@ export const useEnvironment = () => {
       let geminiErrorMessage = '';
 
       if (!apiKey) {
-        console.warn("Missing VITE_GEMINI_API_KEY! Make sure to refresh your browser.");
+        console.warn("Missing GEMINI_API_KEY! Make sure to refresh your browser.");
       }
 
       if (apiKey) {
