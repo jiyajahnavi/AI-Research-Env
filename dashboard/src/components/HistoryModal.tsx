@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEnvironmentStore } from '../store/useEnvironmentStore';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
-import { X, History, Trophy, Target, Hash, TrendingUp } from 'lucide-react';
+import { X, History, Target, Hash, TrendingUp } from 'lucide-react';
 import clsx from 'clsx';
 
 interface HistoryModalProps {
@@ -56,7 +56,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                   {/* Performance Chart */}
                   <div className="glass-panel p-5 border border-white/5 bg-slate-900/40 rounded-xl">
                     <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-                       <TrendingUp size={16} className="text-primary-400" /> Progression Analytics
+                      <TrendingUp size={16} className="text-primary-400" /> Progression Analytics
                     </h3>
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
@@ -69,9 +69,9 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                             contentStyle={{ backgroundColor: '#0B1120', borderColor: '#3B82F630', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}
                             itemStyle={{ color: '#E2E8F0', fontWeight: '500' }}
                             labelStyle={{ color: '#94A3B8', marginBottom: '4px' }}
-                            formatter={(value: any, name: string) => [
-                                name === 'bestAccuracy' ? `${(value * 100).toFixed(1)}%` : value.toFixed(3), 
-                                name === 'finalScore' ? 'Final Score' : 'Best Accuracy'
+                            formatter={(value: any, name: any) => [
+                              name === 'bestAccuracy' ? `${(value * 100).toFixed(1)}%` : value.toFixed(3),
+                              name === 'finalScore' ? 'Final Score' : 'Best Accuracy'
                             ]}
                             labelFormatter={(label) => `Run #${label}`}
                           />
@@ -85,56 +85,56 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
 
                   {/* Run Logs Table */}
                   <div className="space-y-3">
-                     <h3 className="text-sm font-semibold text-slate-300 ml-1">Run Snapshots</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {runHistory.map((run) => (
-                           <motion.div 
-                              key={run.id} 
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="group p-4 bg-white/[0.02] hover:bg-white/[0.04] border border-white/10 hover:border-primary-500/30 rounded-xl transition-all duration-300 relative overflow-hidden"
-                           >
-                              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/0 via-primary-500/0 to-primary-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                              
-                              <div className="flex justify-between items-start mb-3">
-                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 text-slate-300 font-mono text-xs border border-white/5 shadow-sm group-hover:bg-primary-900/50 group-hover:text-primary-300 transition-colors">
-                                       #{run.runNumber}
-                                    </div>
-                                    <span className="text-xs text-slate-500 font-mono">{run.timestamp}</span>
-                                 </div>
-                                 <div className={clsx(
-                                     "px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide border",
-                                     run.finalScore > 0 ? "bg-success/10 text-success border-success/20" : "bg-warning/10 text-warning border-warning/20"
-                                 )}>
-                                     SCORE: {run.finalScore.toFixed(3)}
-                                 </div>
+                    <h3 className="text-sm font-semibold text-slate-300 ml-1">Run Snapshots</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {runHistory.map((run) => (
+                        <motion.div
+                          key={run.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="group p-4 bg-white/[0.02] hover:bg-white/[0.04] border border-white/10 hover:border-primary-500/30 rounded-xl transition-all duration-300 relative overflow-hidden"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary-500/0 via-primary-500/0 to-primary-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 text-slate-300 font-mono text-xs border border-white/5 shadow-sm group-hover:bg-primary-900/50 group-hover:text-primary-300 transition-colors">
+                                #{run.runNumber}
                               </div>
-                              
-                              <div className="grid grid-cols-2 gap-3 mb-3">
-                                  <div className="bg-slate-900/50 rounded-lg p-2.5 border border-white/5">
-                                      <div className="flex items-center gap-1.5 text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">
-                                          <Target size={12} /> max accuracy
-                                      </div>
-                                      <div className="text-lg font-mono text-white">{(run.bestAccuracy * 100).toFixed(1)}%</div>
-                                  </div>
-                                  <div className="bg-slate-900/50 rounded-lg p-2.5 border border-white/5">
-                                      <div className="flex items-center gap-1.5 text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">
-                                          <Hash size={12} /> total steps
-                                      </div>
-                                      <div className="text-lg font-mono text-white">{run.totalSteps}</div>
-                                  </div>
+                              <span className="text-xs text-slate-500 font-mono">{run.timestamp}</span>
+                            </div>
+                            <div className={clsx(
+                              "px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide border",
+                              run.finalScore > 0 ? "bg-success/10 text-success border-success/20" : "bg-warning/10 text-warning border-warning/20"
+                            )}>
+                              SCORE: {run.finalScore.toFixed(3)}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="bg-slate-900/50 rounded-lg p-2.5 border border-white/5">
+                              <div className="flex items-center gap-1.5 text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">
+                                <Target size={12} /> max accuracy
                               </div>
-                              
-                              <div className="pt-3 border-t border-white/5">
-                                 <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1.5">Final Output</div>
-                                 <p className="text-sm text-slate-300 leading-relaxed italic border-l-2 border-primary-500/30 pl-3 py-0.5">
-                                     "{run.finalDecision}"
-                                 </p>
+                              <div className="text-lg font-mono text-white">{(run.bestAccuracy * 100).toFixed(1)}%</div>
+                            </div>
+                            <div className="bg-slate-900/50 rounded-lg p-2.5 border border-white/5">
+                              <div className="flex items-center gap-1.5 text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">
+                                <Hash size={12} /> total steps
                               </div>
-                           </motion.div>
-                        ))}
-                     </div>
+                              <div className="text-lg font-mono text-white">{run.totalSteps}</div>
+                            </div>
+                          </div>
+
+                          <div className="pt-3 border-t border-white/5">
+                            <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1.5">Final Output</div>
+                            <p className="text-sm text-slate-300 leading-relaxed italic border-l-2 border-primary-500/30 pl-3 py-0.5">
+                              "{run.finalDecision}"
+                            </p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

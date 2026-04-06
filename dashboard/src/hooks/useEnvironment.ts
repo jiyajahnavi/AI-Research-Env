@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { useEnvironmentStore } from '../store/useEnvironmentStore';
 import { api } from '../services/api';
 import axios from 'axios';
@@ -212,16 +212,16 @@ Rules:
       });
 
       if (isFinal || obs.done) {
-          const newRecord = {
-              id: crypto.randomUUID(),
-              timestamp: new Date().toLocaleTimeString(),
-              runNumber: useEnvironmentStore.getState().runHistory.length + 1,
-              finalScore: obs.score || envState.currentScore || 0,
-              bestAccuracy: newBestAcc,
-              totalSteps: envState.stepCount + 1,
-              finalDecision: isFinal ? content : 'Horizon Limit Reached.'
-          };
-          useEnvironmentStore.getState().addHistory(newRecord);
+        const newRecord = {
+          id: crypto.randomUUID(),
+          timestamp: new Date().toLocaleTimeString(),
+          runNumber: useEnvironmentStore.getState().runHistory.length + 1,
+          finalScore: obs.score || envState.currentScore || 0,
+          bestAccuracy: newBestAcc,
+          totalSteps: envState.stepCount + 1,
+          finalDecision: isFinal ? content : 'Horizon Limit Reached.'
+        };
+        useEnvironmentStore.getState().addHistory(newRecord);
       }
 
       if ((isFinal || obs.done) && isAutoRunning) {
