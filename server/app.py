@@ -267,7 +267,15 @@ async def run_agent(req: AgentRequest):
         print("HF API Failure:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-app.mount("/", StaticFiles(directory="dashboard/dist", html=True), name="ui")
+import os
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_static_dir = os.path.join(os.path.dirname(_current_dir), "dashboard", "dist")
+
+if os.path.exists(_static_dir):
+    print(f"[*] Serving static files from: {_static_dir}")
+    app.mount("/", StaticFiles(directory=_static_dir, html=True), name="ui")
+else:
+    print(f"[!] Warning: static files directory not found at {_static_dir}")
 
 # ═══════════════════════════════════════════════════════════════
 # MAIN
