@@ -17,6 +17,7 @@ dependencies = [
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
     "pydantic>=2.5.0",
+    "openenv-core>=0.2.0"
 ]
 
 [project.optional-dependencies]
@@ -25,8 +26,16 @@ dev = [
     "httpx>=0.25.0",
 ]
 
+<<<<<<< HEAD
 [tool.setuptools.packages.find]
 include = ["server*", "models*", "tasks*", "graders*", "environment*"]
 
 [project.scripts]
 start-server = "server.app:main"
+=======
+[project.scripts]
+start-server = "server.app:main"
+
+[tool.setuptools]
+py-modules = ["environment", "models", "tasks", "graders"]
+>>>>>>> 202fb868420d934493aba3ce711a88e68db99729
