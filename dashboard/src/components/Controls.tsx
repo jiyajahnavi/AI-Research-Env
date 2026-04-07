@@ -37,11 +37,11 @@ export const Controls: React.FC = () => {
                 disabled={isRunning || isAutoRunning}
                 value={envState.taskId}
                 onChange={(e) => resetEnvironment(e.target.value)}
-                className="bg-transparent text-[10px] text-slate-400 font-mono uppercase tracking-wider focus:outline-none cursor-pointer hover:text-primary-300 transition-colors"
+                className="ml-1 bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/20 rounded-lg px-3 py-1.5 text-[10px] font-bold font-mono uppercase tracking-wider focus:outline-none cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:scale-[1.02] active:scale-95"
               >
-                <option value="task_easy_image_classification">Easy: Vision</option>
-                <option value="task_medium_nlp_sentiment">Medium: NLP</option>
-                <option value="task_hard_tabular_prediction">Hard: Tabular</option>
+                <option value="task_easy_image_classification" className="bg-background text-white">Easy: Vision</option>
+                <option value="task_medium_nlp_sentiment" className="bg-background text-white">Medium: NLP</option>
+                <option value="task_hard_tabular_prediction" className="bg-background text-white">Hard: Tabular</option>
               </select>
             </div>
           </div>
