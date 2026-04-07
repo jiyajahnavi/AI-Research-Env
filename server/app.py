@@ -10,8 +10,13 @@ Endpoints:
     GET  /tasks          — List available tasks
     GET  /info           — Environment metadata
 """
-from fastapi.staticfiles import StaticFiles
+import sys
 import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from fastapi.staticfiles import StaticFiles
+
 import time
 from typing import Optional
 from fastapi import Request
@@ -24,7 +29,7 @@ from environment import ResearchEnvironment
 from models import ResearchAction
 from tasks import list_task_ids, TASKS
 
-
+import uvicorn
 
 # ═══════════════════════════════════════════════════════════════
 # Pydantic request / response models for the HTTP API
@@ -294,7 +299,22 @@ else:
 # MAIN
 # ═══════════════════════════════════════════════════════════════
 
-if __name__ == "__main__":
-    import uvicorn
+def main():
+    """
+    Entry point for running the server.
+    Required for:
+    - OpenEnv validator
+    - HuggingFace Spaces
+    - CLI execution
+    """
     port = int(os.environ.get("PORT", 7860))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(
+        "server.app:app",
+        host="0.0.0.0",
+        port=port,
+        reload=False
+    )
+
+
+if __name__ == "__main__":
+    main()

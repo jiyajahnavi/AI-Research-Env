@@ -5,11 +5,13 @@ interface EnvironmentStore {
   envState: EnvironmentState;
   steps: AgentStep[];
   isAutoRunning: boolean;
+  seed: number;
   runHistory: import('../types').RunHistoryRecord[];
   setEnvState: (state: Partial<EnvironmentState>) => void;
   addStep: (step: AgentStep) => void;
   addHistory: (record: import('../types').RunHistoryRecord) => void;
   toggleAutoRun: () => void;
+  setSeed: (seed: number) => void;
   reset: () => void;
 }
 
@@ -28,19 +30,21 @@ export const useEnvironmentStore = create<EnvironmentStore>((set) => ({
   envState: initialState,
   steps: [],
   isAutoRunning: false,
+  seed: 42,
   runHistory: [],
   setEnvState: (state) => set((prev) => ({ envState: { ...prev.envState, ...state } })),
   addStep: (step) => set((prev) => ({ steps: [...prev.steps, step] })),
   addHistory: (record) => set((prev) => ({ runHistory: [...prev.runHistory, record] })),
   toggleAutoRun: () => set((prev) => ({ isAutoRunning: !prev.isAutoRunning })),
-  reset: () => set((prev) => ({ 
-    envState: { 
-      ...initialState, 
-      taskId: prev.envState.taskId, 
-      taskName: prev.envState.taskName 
-    }, 
-    steps: [], 
-    isAutoRunning: false, 
-    runHistory: prev.runHistory 
+  setSeed: (seed) => set({ seed }),
+  reset: () => set((prev) => ({
+    envState: {
+      ...initialState,
+      taskId: prev.envState.taskId,
+      taskName: prev.envState.taskName
+    },
+    steps: [],
+    isAutoRunning: false,
+    runHistory: prev.runHistory
   })),
 }));
