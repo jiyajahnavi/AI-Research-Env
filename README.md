@@ -3,7 +3,7 @@ title: AI Research Dashboard
 emoji: 🤖
 colorFrom: blue
 colorTo: purple
-sdk: python
+sdk: docker
 sdk_version: "0.2.4"
 python_version: "3.11"
 app_file: app.py
