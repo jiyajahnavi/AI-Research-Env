@@ -1,3 +1,15 @@
+---
+title: AI Research Dashboard
+emoji: 🤖
+colorFrom: blue
+colorTo: purple
+sdk: python
+sdk_version: "0.2.4"
+python_version: "3.11"
+app_file: app.py
+pinned: false
+---
+
 <div align="center">
 <pre>
  █████╗ ██╗    ██████╗ ███████╗███████╗███████╗  █████╗  ██████╗  ██████╗██╗  ██╗
@@ -36,16 +48,6 @@ AI research environment that simulates the end-to-end scientific discovery proce
 
 - **API Docs**: https://jiyajahnavi-multiagent-marketingenv.hf.space/docs
 
----
-title: AI Research Dashboard
-emoji: 🤖
-colorFrom: blue
-colorTo: purple
-sdk: python
-sdk_version: "0.2.4"
-python_version: "3.11"
-app_file: app.py
-pinned: false
 ---
 
 ## Table of Contents
