@@ -9,7 +9,10 @@ export const useEnvironment = () => {
   const resetEnvironment = useCallback(async (taskId?: string) => {
     try {
       store.setEnvState({ status: 'running' });
-      const responseData = await api.reset(taskId || store.envState.taskId);
+      const responseData = await api.reset({
+        taskId: taskId || store.envState.taskId,
+        seed: store.seed,
+      });
 
       const obs = responseData;
       const payload = obs.data || {};

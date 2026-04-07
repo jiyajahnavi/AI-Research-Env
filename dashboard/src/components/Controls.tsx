@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Play, RotateCcw, Pause, History } from 'lucide-react';
+import { Play, RotateCcw, Pause, History, Dices } from 'lucide-react';
 import { useEnvironment } from '../hooks/useEnvironment';
 import { HistoryModal } from './HistoryModal';
 import clsx from 'clsx';
 
 export const Controls: React.FC = () => {
-  const { runNextStep, resetEnvironment, toggleAutoRun, isAutoRunning, envState } = useEnvironment();
+  const { runNextStep, resetEnvironment, toggleAutoRun, isAutoRunning, envState, seed, setSeed } = useEnvironment();
   const isRunning = envState.status === 'running';
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
@@ -44,6 +44,21 @@ export const Controls: React.FC = () => {
                 <option value="task_hard_tabular_prediction">Hard: Tabular</option>
               </select>
             </div>
+          </div>
+
+          {/* Seed Control */}
+          <div className="flex items-center gap-2 ml-4 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg">
+            <Dices size={14} className="text-primary-400 opacity-70" />
+            <label className="text-[10px] text-slate-400 font-mono uppercase tracking-wider select-none">Seed</label>
+            <input
+              type="number"
+              min={0}
+              max={9999}
+              value={seed}
+              onChange={(e) => setSeed(Number(e.target.value))}
+              disabled={isRunning || isAutoRunning}
+              className="w-16 bg-transparent text-sm text-white font-mono text-center border-b border-white/20 focus:border-primary-400 focus:outline-none transition-colors disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
           </div>
         </div>
 
