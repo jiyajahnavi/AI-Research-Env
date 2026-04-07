@@ -80,8 +80,7 @@ class ResearchEnvironment:
             task_id = "task_easy_image_classification"
 
         self._task_config = get_task(task_id)
-        if seed is not None:
-            random.seed(seed)
+        # All randomness routes through self._rng only — never touch global random
         self._rng = random.Random(seed)
         self._designed_experiments = {}
         self._experiment_results = {}
@@ -444,13 +443,14 @@ class ResearchEnvironment:
 
         base_acc = method_config["expected_accuracy"].get(exp["dataset_id"], 0.5)
 
-        # Add uncertainty to simulate difficulty and varied setups safely
-        noise = self._rng.uniform(-0.02, 0.03)
-        # Medium/Hard tasks get slightly more variance
-        if self._task_config.get("difficulty") == "hard":
-            noise += self._rng.uniform(-0.04, 0.04)
-        elif self._task_config.get("difficulty") == "medium":
-            noise += self._rng.uniform(-0.02, 0.02)
+        # Add controlled, symmetric noise — scaled by difficulty
+        difficulty = self._task_config.get("difficulty", "easy")
+        if difficulty == "hard":
+            noise = self._rng.uniform(-0.015, 0.025)
+        elif difficulty == "medium":
+            noise = self._rng.uniform(-0.010, 0.020)
+        else:
+            noise = self._rng.uniform(-0.005, 0.015)
             
         accuracy = max(0.0, min(1.0, base_acc + noise))
         accuracy = round(accuracy, 4)

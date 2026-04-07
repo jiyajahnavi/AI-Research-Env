@@ -41,13 +41,15 @@ def safe_step(env, action, step_id=None):
 # BASELINE AGENT
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_baseline_agent(env, task_id):
-    """Runs a non-deterministic baseline agent simulating actual search and evaluation."""
+def run_baseline_agent(env, task_id, seed=42):
+    """Runs a deterministic baseline agent for reproducible evaluation."""
     task_config = TASKS[task_id]
     start_time = time.time()
+    # Per-task seeded RNG for agent-side choices (method/dataset selection)
+    agent_rng = random.Random(seed)
 
     print(f"\nTask: {task_id}")
-    obs = env.reset(task_id=task_id, seed=random.randint(1, 10000))
+    obs = env.reset(task_id=task_id, seed=seed)
     step_id = 1
 
     # Step 1: Read paper
@@ -67,13 +69,12 @@ def run_baseline_agent(env, task_id):
     best_acc = 0.0
     best_method, best_dataset = None, None
 
-    # Try UP TO 4 experiments randomly
-    for _ in range(4):
-        if not datasets or not methods:
-            break
-
-        dataset = random.choice(datasets)
-        method = random.choice(methods)
+    # Systematically try each method on primary dataset (deterministic coverage)
+    primary_dataset = datasets[0]
+    num_experiments = min(4, len(methods))
+    for i in range(num_experiments):
+        method = methods[i % len(methods)]
+        dataset = primary_dataset
 
         # Design experiment
         obs = safe_step(env, ResearchAction("design_experiment", f"{method}:{dataset}"), step_id)
@@ -89,7 +90,6 @@ def run_baseline_agent(env, task_id):
         
         acc = obs.data.get("accuracy", 0.0)
 
-        # Non-deterministic outcome evaluation
         if acc > best_acc:
             best_acc = acc
             best_method = method
@@ -151,10 +151,7 @@ def run_random_agent(env, task_id):
     if not obs.done:
         obs = safe_step(env, ResearchAction("final_answer", "random conclusion"))
 
-    # Add slight noise for realism in benchmark
-    noisy_score = max(0.0, min(1.0, obs.score + rng.uniform(-0.02, 0.02)))
-
-    return {"task_id": task_id, "score": noisy_score}
+    return {"task_id": task_id, "score": obs.score}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # MAIN EXECUTION
