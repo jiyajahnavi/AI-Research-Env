@@ -6,17 +6,26 @@ import axios from 'axios';
 export const useEnvironment = () => {
   const store = useEnvironmentStore();
 
-  const resetEnvironment = useCallback(async () => {
+  const resetEnvironment = useCallback(async (taskId?: string) => {
     try {
       store.setEnvState({ status: 'running' });
-      const responseData = await api.reset();
+      const responseData = await api.reset(taskId || store.envState.taskId);
 
       const obs = responseData;
       const payload = obs.data || {};
 
+      // Dynamic task name mapping
+      const taskNames: Record<string, string> = {
+        'task_easy_image_classification': 'Easy: Image Classification',
+        'task_medium_nlp_sentiment': 'Medium: NLP Sentiment',
+        'task_hard_tabular_prediction': 'Hard: Tabular Prediction'
+      };
+
       store.reset();
       store.setEnvState({
         status: 'idle',
+        taskId: taskId || store.envState.taskId,
+        taskName: taskNames[taskId || store.envState.taskId || ''] || 'Unknown Task',
         available_methods: payload.available_methods || ['cnn'],
         available_datasets: payload.available_datasets || ['digits_full'],
         baselineAccuracy: payload.baseline_accuracy || 0.62,

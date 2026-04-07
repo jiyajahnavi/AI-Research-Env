@@ -6,9 +6,11 @@ const BASE_URL = isProd ? window.location.origin : (import.meta.env.VITE_API_URL
 console.log("API URL Resolving to:", BASE_URL);
 
 export const api = {
-  reset: async () => {
+  reset: async (taskId?: string) => {
     try {
-      const response = await axios.post(`${BASE_URL}/reset`, {});
+      const response = await axios.post(`${BASE_URL}/reset`, {
+        task_id: taskId
+      });
       return response.data;
     } catch (error) {
       console.error('Error resetting environment:', error);

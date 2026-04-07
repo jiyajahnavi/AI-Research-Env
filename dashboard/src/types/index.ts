@@ -5,6 +5,8 @@ export interface EnvironmentState {
   baselineAccuracy: number;
   currentBestAccuracy: number;
   lastReward: number;
+  taskId?: string;
+  taskName?: string;
   available_methods?: string[];
   available_datasets?: string[];
   rewardBreakdown?: {

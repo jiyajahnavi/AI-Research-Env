@@ -20,6 +20,8 @@ const initialState: EnvironmentState = {
   baselineAccuracy: 0.85,
   currentBestAccuracy: 0.85,
   lastReward: 0,
+  taskId: 'task_easy_image_classification',
+  taskName: 'Easy: Image Classification',
 };
 
 export const useEnvironmentStore = create<EnvironmentStore>((set) => ({
@@ -31,5 +33,14 @@ export const useEnvironmentStore = create<EnvironmentStore>((set) => ({
   addStep: (step) => set((prev) => ({ steps: [...prev.steps, step] })),
   addHistory: (record) => set((prev) => ({ runHistory: [...prev.runHistory, record] })),
   toggleAutoRun: () => set((prev) => ({ isAutoRunning: !prev.isAutoRunning })),
-  reset: () => set((prev) => ({ envState: initialState, steps: [], isAutoRunning: false, runHistory: prev.runHistory })),
+  reset: () => set((prev) => ({ 
+    envState: { 
+      ...initialState, 
+      taskId: prev.envState.taskId, 
+      taskName: prev.envState.taskName 
+    }, 
+    steps: [], 
+    isAutoRunning: false, 
+    runHistory: prev.runHistory 
+  })),
 }));

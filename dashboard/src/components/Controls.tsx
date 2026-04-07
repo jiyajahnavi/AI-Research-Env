@@ -24,9 +24,26 @@ export const Controls: React.FC = () => {
       <div className="flex items-center justify-between p-4 glass-panel m-4 border-b-0 shadow-[0_4px_30px_rgba(0,0,0,0.3)] relative z-20">
         <div className="flex items-center gap-4">
 
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">AI Research Interface</h1>
-            <p className="text-[11px] text-primary-300 font-mono tracking-widest opacity-80 uppercase mt-0.5">Neural Agent Control</p>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+              AI Research Interface
+            </h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-[10px] text-primary-300 font-mono tracking-widest opacity-80 uppercase">
+                {envState.taskName || 'Research Environment'}
+              </p>
+              <span className="w-1 h-1 rounded-full bg-primary-500 opacity-40"></span>
+              <select
+                disabled={isRunning || isAutoRunning}
+                value={envState.taskId}
+                onChange={(e) => resetEnvironment(e.target.value)}
+                className="bg-transparent text-[10px] text-slate-400 font-mono uppercase tracking-wider focus:outline-none cursor-pointer hover:text-primary-300 transition-colors"
+              >
+                <option value="task_easy_image_classification">Easy: Vision</option>
+                <option value="task_medium_nlp_sentiment">Medium: NLP</option>
+                <option value="task_hard_tabular_prediction">Hard: Tabular</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -46,7 +63,7 @@ export const Controls: React.FC = () => {
           </button>
 
           <button
-            onClick={resetEnvironment}
+            onClick={() => resetEnvironment()}
             disabled={isRunning}
             className="group relative flex items-center gap-2.5 px-5 py-2.5 text-sm font-medium text-slate-300 bg-white/5 hover:bg-white/10 hover:text-white border border-white/10 rounded-xl transition-all duration-300 disabled:opacity-50 overflow-hidden shadow-sm"
           >
