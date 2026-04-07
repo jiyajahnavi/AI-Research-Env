@@ -27,7 +27,8 @@ dev = [
 ]
 
 [project.scripts]
-start-server = "server.app:main"
+server = "server.app:main"
+
 
 [tool.setuptools]
 py-modules = ["environment", "models", "tasks", "graders"]
