@@ -32,9 +32,9 @@ AI research environment that simulates the end-to-end scientific discovery proce
 <br/>
 </div>
 
-- **Space URL**: https://huggingface.co/spaces/jiyajahnavi/MultiAgent-MarketingENV
+- **Space URL**: https://huggingface.co/spaces/jiyajahnavi/AI-Research-ENV
 
-- **API Docs**: https://jiyajahnavi-multiagent-marketingenv.hf.space/docs
+- **API Docs**: https://jiyajahnavi-ai-research-env.hf.space/docs
 
 ---
 
