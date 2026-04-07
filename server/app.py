@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 import time
 from typing import Optional
+from fastapi import Request
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -163,20 +164,32 @@ async def get_tasks():
 
 
 @app.post("/reset", response_model=ObservationResponse)
-async def reset(req: ResetRequest):
+async def reset(request: Request):
     """
     Reset the environment and start a new episode.
 
-    If task_id is not provided, defaults to the easy task.
+    MUST support:
+    - Empty body (validator)
+    - JSON body (normal usage)
     """
     try:
-        obs = env.reset(task_id=req.task_id, seed=req.seed)
-    except KeyError as e:
+        # Safely parse body (handles empty request)
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+        task_id = body.get("task_id", None)
+        seed = body.get("seed", 42)
+
+        obs = env.reset(task_id=task_id, seed=seed)
+
+    except KeyError:
         raise HTTPException(
             status_code=400,
-            detail=f"Unknown task_id: {req.task_id}. "
-                   f"Available: {list_task_ids()}",
+            detail=f"Unknown task_id: {task_id}. Available: {list_task_ids()}",
         )
+
     return ObservationResponse(
         message=obs.message,
         data=obs.data,
