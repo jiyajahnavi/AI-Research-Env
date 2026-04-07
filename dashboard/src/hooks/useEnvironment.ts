@@ -118,8 +118,9 @@ Rules:
             const validMethods = envState.available_methods || ['cnn'];
             const validDatasets = envState.available_datasets || ['digits_full'];
 
-            const method = validMethods[Math.floor(Math.random() * validMethods.length)];
-            const dataset = validDatasets[Math.floor(Math.random() * validDatasets.length)];
+            // Deterministic round-robin — no Math.random()
+            const method = validMethods[stepCount % validMethods.length];
+            const dataset = validDatasets[stepCount % validDatasets.length];
             content = `${method}:${dataset}`;
           } else {
             actionType = 'run_experiment';
