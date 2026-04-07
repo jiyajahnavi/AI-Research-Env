@@ -1,18 +1,40 @@
----
-title: AI Research Scientist Environment
-emoji: 🧠
-colorFrom: blue
-colorTo: purple
-sdk: docker
-app_port: 7860
-pinned: false
----
+<div align="center">
+<pre>
+ █████╗ ██╗    ██████╗ ███████╗███████╗███████╗  █████╗  ██████╗  ██████╗██╗  ██╗
+██╔══██╗██║    ██╔══██╗██╔════╝██╔════╝██╔════╝██╔══██╗██╔══██╗██╔════╝██║  ██║
+███████║██║    ██████╔╝█████╗  ███████╗█████╗   ███████║██████╔╝██║      ███████║
+██╔══██║██║    ██╔══██╗██╔══╝  ╚════██║██╔══╝   ██╔══██║██╔══██╗██║      ██╔══██║
+██║  ██║██║    ██║   ██║███████╗███████║███████╗██║   ██║██║  ██║╚██████╗██║  ██║
+╚═╝  ╚═╝╚═╝    ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
+</pre>
 
-# AI Research Scientist Environment
+<pre>
+███████╗███╗   ██╗██╗   ██╗
+██╔════╝████╗  ██║██║   ██║
+█████╗  ██╔██╗ ██║██║   ██║
+██╔══╝  ██║╚██╗██║╚██╗ ██╔╝
+███████╗██║ ╚████║ ╚████╔╝ 
+╚══════╝╚═╝  ╚═══╝  ╚═══╝  
+</pre>
 
-An **OpenEnv-compliant** environment that simulates scientific research workflows for evaluating AI reasoning agents.
 
-Unlike traditional environments that focus on task execution or coding, this environment models the **end-to-end research process** where an autonomous agent must read papers, form hypotheses, design experiments, execute them, analyze results, and draw conclusions.
+AI research environment that simulates the end-to-end scientific discovery process, enabling agents to analyze papers, generate hypotheses, design experiments, and validate results collaboratively
+
+<br/>
+
+![OpenEnv](https://img.shields.io/badge/OpenEnv-Compatible-brightgreen?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![HuggingFace](https://img.shields.io/badge/HuggingFace-Spaces-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
+![License](https://img.shields.io/badge/License-MIT-red?style=for-the-badge)
+
+<br/>
+</div>
+
+- **Space URL**: https://huggingface.co/spaces/jiyajahnavi/MultiAgent-MarketingENV
+
+- **API Docs**: https://jiyajahnavi-multiagent-marketingenv.hf.space/docs
 
 ---
 
@@ -26,8 +48,6 @@ Unlike traditional environments that focus on task execution or coding, this env
 - [Tasks & Graders](#tasks--graders)
 - [Agent Actions](#agent-actions)
 - [Reward Function](#reward-function)
-- [Pipeline Stage Rewards / Collaboration / Penalties](#pipeline-stage-rewards--collaboration--penalties)
-- [Five Adversarial Scenarios](#five-adversarial-scenarios)
 - [Training Pipeline](#training-pipeline)
 - [Project Structure](#project-structure)
 - [Configuration](#configuration)
@@ -130,25 +150,9 @@ The environment ships with deterministic, multi-factor graders evaluating the ag
 
 | Task | Difficulty | Steps | Domain | Challenge |
 |------|-----------|-------|--------|-----------|
-| `task_easy_image_classification` | 🟢 Easy | 8 | Computer Vision | Clear signal, minimal noise |
-| `task_medium_nlp_sentiment` | 🟡 Medium | 12 | NLP | Noisy results, misleading papers |
-| `task_hard_tabular_prediction` | 🔴 Hard | 15 | Healthcare ML | Conflicting evidence, budget limit |
-
----
-
-## Agent Actions
-
-Agents have a predefined set of tools to mimic real-world machine learning research workflows:
-
-| Action | Description |
-|--------|-------------|
-| `read_paper` | Read paper summaries for domain knowledge |
-| `propose_hypothesis` | Form an initial hypothesis |
-| `design_experiment` | Specify method + dataset combination |
-| `run_experiment` | Execute a designed experiment |
-| `analyze_results` | Get structured analysis of results |
-| `refine_hypothesis` | Update hypothesis based on evidence |
-| `final_answer` | Submit conclusion (ends episode) |
+| `image_classification` | 🟢 Easy | 8 | Computer Vision | Clear signal, minimal noise |
+| `nlp_sentiment` | 🟡 Medium | 12 | NLP | Noisy results, misleading papers |
+| `tabular_prediction` | 🔴 Hard | 15 | Healthcare ML | Conflicting evidence, budget limit |
 
 ---
 
@@ -207,43 +211,28 @@ weights = {
 | **Invalid action** | `−0.10` | Unknown `action_type` submitted |
 | **Max steps without `final_answer`** | `−0.20` | Episode forcibly terminated |
 
+
 **Characteristics:**
-- ✅ Dense and incremental — every action yields a non-zero signal
-- ✅ Difficulty-aware — `improvement` score has highest weight on Easy, `experiment quality` is highest on Hard
-- ✅ Penalizes hallucinations (guessing without running experiments)
-- ✅ Rewards correct scientific ordering (`read → hypothesize → design → run → analyze → answer`)
-- ✅ Trajectory learning rewards iterative refinement, not lucky one-shot guesses
+-  Dense and incremental (not sparse/binary)
+-  Penalizes invalid/redundant actions
+-  Rewards information gathering and refinement
+-  Difficulty-dependent weight distribution
 
 ---
 
-## Pipeline Stage Rewards / Collaboration / Penalties
+## Agent Actions
 
-### Stage Rewards
-- **`read_paper`**: Positive scalar for first-time reading, reduced returns for redundant reads.
-- **`propose_hypothesis`**: High reward for synthesizing correct insights from papers.
-- **`design_experiment`**: Positive tracking for selecting robust datasets/methodologies.
-- **`run_experiment`**: Heavy algorithmic weighting based on statistical performance.
-- **`analyze_results`**: Moderate reward for successfully calculating metrics.
+Agents have a predefined set of tools to mimic real-world machine learning research workflows:
 
-### Collaboration & History
-- Includes a fully instrumented **History Log Viewer** allowing the user to logically trace and compare individual Autopilot iterations, recording final scores and execution metrics relative to the mathematical maximum achievable score.
-
-### Penalties
-- **Hallucinations:** Significant penalties for guessing experimental results without running them.
-- **Sequence Errors:** Firing `analyze_results` before `run_experiment` incurs a logic penalty.
-- **Format Errors:** Falling back from strict JSON schema limits cumulative score upside.
-
----
-
-## Five Adversarial Scenarios
-
-The environment's dynamic configurations allow for deploying specific challenging paradigms against the reasoning agent:
-
-1. **Misleading Literature:** Text containing adversarial information intended to poison hypothesis formulation.
-2. **Saturated Budgets:** Tasks evaluating computational efficiency, penalizing grid-search style brute-forcing.
-3. **Overfitting Pitfalls:** Training environments with noisy sub-labels that look highly accurate initially but crash in testing.
-4. **False Positive Results:** Analysis tools that emit conflicting or stochastic metric returns.
-5. **Absent Context:** Scenarios where background literature is blank, requiring fully unsupervised deduction to proceed.
+| Action | Description |
+|--------|-------------|
+| `read_paper` | Read paper summaries for domain knowledge |
+| `propose_hypothesis` | Form an initial hypothesis |
+| `design_experiment` | Specify method + dataset combination |
+| `run_experiment` | Execute a designed experiment |
+| `analyze_results` | Get structured analysis of results |
+| `refine_hypothesis` | Update hypothesis based on evidence |
+| `final_answer` | Submit conclusion (ends episode) |
 
 ---
 
@@ -296,8 +285,13 @@ This project is licensed under the **[MIT License](LICENSE)**.
 
 ## Author
 
-Created by **Team one way**.
+Created by **Team One Way**.
+| Name                  | Role               |
+|-----------------------|--------------------|
+| Jiya Jahnavi          | Co-Developer       |
+| Aditya Kumar Singh    | Lead Developer     |
+| Rishabh Yadav         | Co-Developer       |
 
 ## Hackathon
 
-Developed for the **Meta Python OpenENV hackathon 2026**.
+Developed for the **Meta Python OpenENV Hackathon 2026**.
