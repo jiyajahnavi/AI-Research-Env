@@ -285,15 +285,16 @@ async def run_agent(req: AgentRequest):
         print("HF API Failure:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-import os
 _current_dir = os.path.dirname(os.path.abspath(__file__))
-_static_dir = os.path.join(os.path.dirname(_current_dir), "dashboard", "dist")
+_root_dir = os.path.dirname(_current_dir)
+_static_dir = os.path.join(_root_dir, "dashboard", "dist")
 
 if os.path.exists(_static_dir):
-    print(f"[*] Serving static files from: {_static_dir}")
+    print(f"[*] Serving dashboard from: {_static_dir}")
     app.mount("/", StaticFiles(directory=_static_dir, html=True), name="ui")
 else:
-    print(f"[!] Warning: static files directory not found at {_static_dir}")
+    print(f"[!] Critical: dashboard/dist not found at {_static_dir}")
+    # We don't mount so it returns 404 instead of crashing, helping debug
 
 # ═══════════════════════════════════════════════════════════════
 # MAIN

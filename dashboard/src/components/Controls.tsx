@@ -25,9 +25,14 @@ export const Controls: React.FC = () => {
         <div className="flex items-center gap-4">
 
           <div className="flex flex-col">
-            <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-              AI Research Interface
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                AI Research Interface
+              </h1>
+              <span className="px-1.5 py-0.5 text-[8px] font-bold bg-primary-500/20 text-primary-400 border border-primary-500/30 rounded uppercase tracking-widest">
+                v1.1
+              </span>
+            </div>
             <div className="flex items-center gap-2 mt-0.5">
               <p className="text-[10px] text-primary-300 font-mono tracking-widest opacity-80 uppercase">
                 {envState.taskName || 'Research Environment'}
