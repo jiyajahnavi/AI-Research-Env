@@ -37,7 +37,7 @@ export const useEnvironmentStore = create<EnvironmentStore>((set) => ({
   addHistory: (record) => set((prev) => ({ runHistory: [...prev.runHistory, record] })),
   toggleAutoRun: () => set((prev) => ({ isAutoRunning: !prev.isAutoRunning })),
   setSeed: (seed) => set({ seed }),
-<<<<<<< HEAD
+
   reset: () => set((prev) => ({
     envState: {
       ...initialState,
@@ -47,16 +47,5 @@ export const useEnvironmentStore = create<EnvironmentStore>((set) => ({
     steps: [],
     isAutoRunning: false,
     runHistory: prev.runHistory
-=======
-  reset: () => set((prev) => ({ 
-    envState: { 
-      ...initialState, 
-      taskId: prev.envState.taskId, 
-      taskName: prev.envState.taskName 
-    }, 
-    steps: [], 
-    isAutoRunning: false, 
-    runHistory: prev.runHistory 
->>>>>>> 202fb868420d934493aba3ce711a88e68db99729
   })),
 }));
