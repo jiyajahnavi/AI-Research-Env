@@ -27,3 +27,6 @@ dev = [
 
 [tool.setuptools.packages.find]
 include = ["server*", "models*", "tasks*", "graders*", "environment*"]
+
+[project.scripts]
+start-server = "server.app:main"
