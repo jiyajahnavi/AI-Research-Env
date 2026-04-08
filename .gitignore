@@ -10,3 +10,5 @@ outputs/
 logs/
 .venv/
 venv/
+dashboard/dist/
+note.txt

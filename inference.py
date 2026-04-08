@@ -5,6 +5,11 @@ import time
 import os
 import random
 
+# ENV VARIABLES (MANDATORY)
+API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "baseline-model")
+HF_TOKEN = os.getenv("HF_TOKEN")
+
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -12,167 +17,148 @@ from environment import ResearchEnvironment
 from models import ResearchAction
 from tasks import list_task_ids, TASKS
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SAFE STEP WITH LOGGING
-# ─────────────────────────────────────────────────────────────────────────────
 
-def safe_step(env, action, step_id=None, task_id=None):
-    """Executes a step in the environment with error handling and logging."""
+# ─────────────────────────────────────────────────────────────
+# LOGGING FUNCTIONS (STRICT FORMAT)
+# ─────────────────────────────────────────────────────────────
+
+def log_start(task, env, model):
+    print(f"[START] task={task} env={env} model={model}", flush=True)
+
+
+def log_step(step, action, reward, done, error):
+    error_val = error if error else "null"
+    print(
+        f"[STEP] step={step} action={action} "
+        f"reward={reward:.2f} done={str(done).lower()} error={error_val}",
+        flush=True,
+    )
+
+
+def log_end(success, steps, score, rewards):
+    rewards_str = ",".join([f"{r:.2f}" for r in rewards])
+    print(
+        f"[END] success={str(success).lower()} steps={steps} "
+        f"score={score:.2f} rewards={rewards_str}",
+        flush=True,
+    )
+
+
+# ─────────────────────────────────────────────────────────────
+# SAFE STEP (NO EXTRA PRINTS)
+# ─────────────────────────────────────────────────────────────
+
+def safe_step(env, action):
     try:
-        obs = env.step(action)
-        
-        if step_id is not None:
-            print(
-                f"  Step {step_id}: action={action.action_type} "
-                f"| reward={obs.reward:.3f} | score={obs.score:.3f}"
-            )
-            # Structured log for validator
-            print(
-                f"[STEP] step={step_id} action={action.action_type} "
-                f"reward={obs.reward:.4f} score={obs.score:.4f}",
-                flush=True
-            )
-        return obs
-
+        return env.step(action), None
     except Exception as e:
-        print(f"Error during step {step_id if step_id else ''}: {e}")
-        # Return a mock observation object on failure
-        return type("Obj", (), {
+        obs = type("Obj", (), {
             "reward": -0.5,
             "score": 0.0,
             "done": True,
             "data": {},
-            "message": f"Error: {str(e)}"
+            "message": str(e)
         })()
+        return obs, str(e)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# BASELINE AGENT
-# ─────────────────────────────────────────────────────────────────────────────
 
-def run_baseline_agent(env, task_id, seed=42):
-    """Runs a deterministic baseline agent for reproducible evaluation."""
+# ─────────────────────────────────────────────────────────────
+# BASELINE AGENT (CORE LOGIC PRESERVED)
+# ─────────────────────────────────────────────────────────────
+
+def run_task(env, task_id, seed=42):
     task_config = TASKS[task_id]
-    start_time = time.time()
-    # Per-task seeded RNG for agent-side choices (method/dataset selection)
-    agent_rng = random.Random(seed)
+    random.seed(seed)
 
-    print(f"\nTask: {task_id}")
-    print(f"[START] task={task_id}", flush=True)
-    obs = env.reset(task_id=task_id, seed=seed)
+    rewards = []
     step_id = 1
 
-    # Step 1: Read paper
-    obs = safe_step(env, ResearchAction("read_paper", "all"), step_id)
-    step_id += 1
+    log_start(task_id, "research_env", MODEL_NAME)
 
-    # Step 2: Generate hypothesis
-    key_finding = task_config["paper_summaries"][0].get("key_finding", "")
-    hypothesis = f"Hypothesis based on {key_finding}: Randomised trials will yield best methods."
-    obs = safe_step(env, ResearchAction("propose_hypothesis", hypothesis), step_id)
-    step_id += 1
+    try:
+        obs = env.reset(task_id=task_id, seed=seed)
 
-    # Ensure dataset and methods are available
-    datasets = [d["dataset_id"] for d in task_config["available_datasets"]]
-    methods = [m["method_id"] for m in task_config["available_methods"]]
-
-    best_acc = 0.0
-    best_method, best_dataset = None, None
-
-    # Systematically try each method on primary dataset (deterministic coverage)
-    primary_dataset = datasets[0]
-    num_experiments = min(4, len(methods))
-    for i in range(num_experiments):
-        method = methods[i % len(methods)]
-        dataset = primary_dataset
-
-        # Design experiment
-        obs = safe_step(env, ResearchAction("design_experiment", f"{method}:{dataset}"), step_id)
+        # Step 1: read paper
+        obs, err = safe_step(env, ResearchAction("read_paper", "all"))
+        log_step(step_id, "read_paper", obs.reward, obs.done, err)
+        rewards.append(obs.reward)
         step_id += 1
-        
-        exp_id = obs.data.get("experiment_id")
-        if not exp_id:
-            continue
 
-        # Run experiment
-        obs = safe_step(env, ResearchAction("run_experiment", exp_id), step_id)
+        # Step 2: hypothesis
+        key_finding = task_config["paper_summaries"][0].get("key_finding", "")
+        hypothesis = f"Hypothesis based on {key_finding}"
+        obs, err = safe_step(env, ResearchAction("propose_hypothesis", hypothesis))
+        log_step(step_id, "propose_hypothesis", obs.reward, obs.done, err)
+        rewards.append(obs.reward)
         step_id += 1
-        
-        acc = obs.data.get("accuracy", 0.0)
 
-        if acc > best_acc:
-            best_acc = acc
-            best_method = method
-            best_dataset = dataset
+        datasets = [d["dataset_id"] for d in task_config["available_datasets"]]
+        methods = [m["method_id"] for m in task_config["available_methods"]]
 
-    # Step: Analyze
-    obs = safe_step(env, ResearchAction("analyze_results", "all"), step_id)
-    step_id += 1
+        best_acc = 0.0
+        best_method, best_dataset = None, None
 
-    # Step: Final answer
-    final = f"After extensive evaluation, {best_method} on {best_dataset} performs best with accuracy {best_acc:.3f}"
-    obs = safe_step(env, ResearchAction("final_answer", final), step_id)
+        primary_dataset = datasets[0]
+        num_experiments = min(4, len(methods))
 
-    # Structured end log for validator
-    step_count = env.state.step_count if hasattr(env, 'state') else step_id
-    print(f"[END] task={task_id} score={obs.score:.4f} steps={step_count}", flush=True)
+        for i in range(num_experiments):
+            method = methods[i % len(methods)]
 
-    elapsed = time.time() - start_time
+            # design
+            obs, err = safe_step(env, ResearchAction("design_experiment", f"{method}:{primary_dataset}"))
+            log_step(step_id, "design_experiment", obs.reward, obs.done, err)
+            rewards.append(obs.reward)
+            step_id += 1
 
-    return {
-        "task_id": task_id,
-        "difficulty": task_config["difficulty"],
-        "score": obs.score,
-        "steps": step_count,
-        "time": round(elapsed, 2),
-    }
+            exp_id = obs.data.get("experiment_id")
+            if not exp_id:
+                continue
 
-# ─────────────────────────────────────────────────────────────────────────────
-# RANDOM AGENT
-# ─────────────────────────────────────────────────────────────────────────────
+            # run
+            obs, err = safe_step(env, ResearchAction("run_experiment", exp_id))
+            log_step(step_id, "run_experiment", obs.reward, obs.done, err)
+            rewards.append(obs.reward)
+            step_id += 1
 
-def run_random_agent(env, task_id):
-    """Runs a random agent to establish a lower bound performance baseline."""
-    rng = random.Random(task_id)
-    task_config = TASKS[task_id]
+            acc = obs.data.get("accuracy", 0.0)
+            if acc > best_acc:
+                best_acc = acc
+                best_method = method
+                best_dataset = primary_dataset
 
-    print(f"[START] task={task_id}", flush=True)
-    obs = env.reset(task_id=task_id, seed=42)
+            if obs.done:
+                break
 
-    actions = [
-        "read_paper",
-        "propose_hypothesis",
-        "design_experiment",
-        "run_experiment",
-        "analyze_results",
-        "final_answer",
-    ]
+        if not obs.done:
+            # analyze
+            obs, err = safe_step(env, ResearchAction("analyze_results", "all"))
+            log_step(step_id, "analyze_results", obs.reward, obs.done, err)
+            rewards.append(obs.reward)
+            step_id += 1
 
-    for _ in range(5):
-        action = rng.choice(actions)
+        if not obs.done:
+            final = f"{best_method} on {best_dataset} best ({best_acc:.2f})"
+            obs, err = safe_step(env, ResearchAction("final_answer", final))
+            log_step(step_id, "final_answer", obs.reward, obs.done, err)
+            rewards.append(obs.reward)
 
-        if action == "design_experiment":
-            methods = [m["method_id"] for m in task_config["available_methods"]]
-            datasets = [d["dataset_id"] for d in task_config["available_datasets"]]
-            content = f"{rng.choice(methods)}:{rng.choice(datasets)}"
-        else:
-            content = "random"
+        # FINAL METRICS
+        steps_taken = len(rewards)
+        score = max(0.0, min(obs.score, 1.0))
+        success = obs.done and score > 0
 
-        obs = safe_step(env, ResearchAction(action, content), step_id=_ + 1, task_id=task_id)
+    finally:
+        try:
+            env.close()
+        except:
+            pass
 
-        if obs.done:
-            break
+        log_end(success, steps_taken, score, rewards)
 
-    if not obs.done:
-        obs = safe_step(env, ResearchAction("final_answer", "random conclusion"), step_id=6, task_id=task_id)
 
-    step_count = env.state.step_count if hasattr(env, 'state') else 0
-    print(f"[END] task={task_id} score={obs.score:.4f} steps={step_count}", flush=True)
-
-    return {"task_id": task_id, "score": obs.score}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# MAIN EXECUTION
-# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────
+# MAIN
+# ─────────────────────────────────────────────────────────────
 
 def main():
     # Initialize OpenAI client with injected environment variables
@@ -188,46 +174,32 @@ def main():
     env = ResearchEnvironment()
     tasks = list_task_ids()
 
-    print("\n" + "="*40)
-    print("RUNNING BASELINE AGENT BENCHMARK")
-    print("="*40)
-    baseline_scores = []
-
     for task in tasks:
-        result = run_baseline_agent(env, task)
-        baseline_scores.append(result["score"])
-        print(f"Task: {task} -> Score: {result['score']:.4f}")
+        env = ResearchEnvironment()
+        run_task(env, task)
 
-    print("\n" + "="*40)
-    print("RUNNING RANDOM AGENT BENCHMARK")
-    print("="*40)
-    random_scores = []
-
-    for task in tasks:
-        result = run_random_agent(env, task)
-        random_scores.append(result["score"])
-        print(f"Task: {task} -> Score: {result['score']:.4f}")
-
-    if not tasks:
-        print("No tasks found.")
-        return 0
-
-    avg_base = sum(baseline_scores) / len(baseline_scores)
-    avg_rand = sum(random_scores) / len(random_scores)
-
-    print("\n" + "="*40)
-    print("FINAL SUMMARY")
-    print("="*40)
-    print(f"Baseline Average: {avg_base:.4f}")
-    print(f"Random Average:   {avg_rand:.4f}")
-    print(f"Performance Gap:  {avg_base - avg_rand:+.4f}")
-    print("="*40)
-
-    return 0
 
 if __name__ == "__main__":
-    try:
-        sys.exit(main())
-    except KeyboardInterrupt:
-        print("\nBenchmark interrupted by user.")
-        sys.exit(1)
+    main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
