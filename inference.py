@@ -14,7 +14,7 @@ from tasks import list_task_ids, TASKS
 # SAFE STEP WITH LOGGING
 # ─────────────────────────────────────────────────────────────────────────────
 
-def safe_step(env, action, step_id=None):
+def safe_step(env, action, step_id=None, task_id=None):
     """Executes a step in the environment with error handling and logging."""
     try:
         obs = env.step(action)
@@ -23,6 +23,12 @@ def safe_step(env, action, step_id=None):
             print(
                 f"  Step {step_id}: action={action.action_type} "
                 f"| reward={obs.reward:.3f} | score={obs.score:.3f}"
+            )
+            # Structured log for validator
+            print(
+                f"[STEP] step={step_id} action={action.action_type} "
+                f"reward={obs.reward:.4f} score={obs.score:.4f}",
+                flush=True
             )
         return obs
 
@@ -49,6 +55,7 @@ def run_baseline_agent(env, task_id, seed=42):
     agent_rng = random.Random(seed)
 
     print(f"\nTask: {task_id}")
+    print(f"[START] task={task_id}", flush=True)
     obs = env.reset(task_id=task_id, seed=seed)
     step_id = 1
 
@@ -103,13 +110,17 @@ def run_baseline_agent(env, task_id, seed=42):
     final = f"After extensive evaluation, {best_method} on {best_dataset} performs best with accuracy {best_acc:.3f}"
     obs = safe_step(env, ResearchAction("final_answer", final), step_id)
 
+    # Structured end log for validator
+    step_count = env.state.step_count if hasattr(env, 'state') else step_id
+    print(f"[END] task={task_id} score={obs.score:.4f} steps={step_count}", flush=True)
+
     elapsed = time.time() - start_time
 
     return {
         "task_id": task_id,
         "difficulty": task_config["difficulty"],
         "score": obs.score,
-        "steps": env.state.step_count if hasattr(env, 'state') else step_id,
+        "steps": step_count,
         "time": round(elapsed, 2),
     }
 
@@ -122,6 +133,7 @@ def run_random_agent(env, task_id):
     rng = random.Random(task_id)
     task_config = TASKS[task_id]
 
+    print(f"[START] task={task_id}", flush=True)
     obs = env.reset(task_id=task_id, seed=42)
 
     actions = [
@@ -143,13 +155,16 @@ def run_random_agent(env, task_id):
         else:
             content = "random"
 
-        obs = safe_step(env, ResearchAction(action, content))
+        obs = safe_step(env, ResearchAction(action, content), step_id=_ + 1, task_id=task_id)
 
         if obs.done:
             break
 
     if not obs.done:
-        obs = safe_step(env, ResearchAction("final_answer", "random conclusion"))
+        obs = safe_step(env, ResearchAction("final_answer", "random conclusion"), step_id=6, task_id=task_id)
+
+    step_count = env.state.step_count if hasattr(env, 'state') else 0
+    print(f"[END] task={task_id} score={obs.score:.4f} steps={step_count}", flush=True)
 
     return {"task_id": task_id, "score": obs.score}
 

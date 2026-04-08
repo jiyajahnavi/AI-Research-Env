@@ -160,11 +160,11 @@ graph TD
 
 The environment ships with deterministic, multi-factor graders evaluating the agent against predefined structured tasks evaluating logic consistency.
 
-| Task | Difficulty | Steps | Domain | Challenge |
-|------|-----------|-------|--------|-----------|
-| `image_classification` | 🟢 Easy | 8 | Computer Vision | Clear signal, minimal noise |
-| `nlp_sentiment` | 🟡 Medium | 12 | NLP | Noisy results, misleading papers |
-| `tabular_prediction` | 🔴 Hard | 15 | Healthcare ML | Conflicting evidence, budget limit |
+| Task | Difficulty | Domain | Challenge |
+|------|-----------|--------|-----------|
+| `image_classification` | 🟢 Easy | Computer Vision | Clear signal, minimal noise |
+| `nlp_sentiment` | 🟡 Medium | NLP | Noisy results, misleading papers |
+| `tabular_prediction` | 🔴 Hard | Healthcare ML | Conflicting evidence, budget limit |
 
 ---
 
