@@ -3,6 +3,7 @@ uvicorn[standard]>=0.24.0
 pydantic>=2.5.0
 google-generativeai>=0.3.0
 huggingface_hub
+openai
 openenv-core>=0.2.0
 python-dotenv
 pyyaml

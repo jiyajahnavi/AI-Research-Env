@@ -1,4 +1,3 @@
-# OpenEnv Environment Manifest
 spec_version: 1
 name: ai-research-scientist
 type: environment
@@ -7,118 +6,89 @@ runtime: docker
 app: server.app:app
 port: 7860
 
-# Metadata
 description: >
-AI Research Scientist Environment — an OpenEnv-compliant simulation
-of scientific research workflows. Agents iteratively read papers,
-formulate hypotheses, design experiments, execute them, analyze results,
-and refine their reasoning.
-
-The environment emphasizes multi-step reasoning, experimental decision-making,
-and iterative improvement under constraints. It includes 3 difficulty levels
-(easy, medium, hard) with deterministic grading and dense reward shaping.
+  AI Research Scientist Environment — an OpenEnv-compliant simulation
+  of scientific research workflows.
 
 author: Aditya Kumar Singh
 version: 1.0.0
 
-# Task configuration
+# Tasks
 tasks:
   - id: task_easy_image_classification
     difficulty: easy
     description: Image classification research with clear performance signals
     max_steps: 12
+    grader:
+      type: score_based
 
   - id: task_medium_nlp_sentiment
     difficulty: medium
     description: NLP sentiment analysis with noisy experimental results
     max_steps: 12
+    grader:
+      type: score_based
 
   - id: task_hard_tabular_prediction
     difficulty: hard
-    description: Tabular prediction with conflicting evidence and experiment budget constraints
+    description: Tabular prediction with conflicting evidence
     max_steps: 15
+    grader:
+      type: score_based
 
-# Action & Observation Space
-
+# Action Space
 action_space:
-type: discrete
-actions:
-- read_paper
-- propose_hypothesis
-- design_experiment
-- run_experiment
-- analyze_results
-- refine_hypothesis
-- final_answer
+  type: discrete
+  actions:
+    - read_paper
+    - propose_hypothesis
+    - design_experiment
+    - run_experiment
+    - analyze_results
+    - refine_hypothesis
+    - final_answer
 
+# Observation Space
 observation_space:
-type: structured
-fields:
-- problem_statement
-- available_papers
-- available_datasets
-- available_methods
-- current_hypothesis
-- experiments_run
-- results_history
-- best_accuracy
-- step_count
+  type: structured
+  fields:
+    - problem_statement
+    - available_papers
+    - available_datasets
+    - available_methods
+    - current_hypothesis
+    - experiments_run
+    - results_history
+    - best_accuracy
+    - step_count
 
-# API endpoints
+# Endpoints
 endpoints:
   reset: /reset
   step: /step
   state: /state
   health: /health
 
-# Grading
-grading:
-  type: deterministic
-  score_range: [0.0, 1.0]
-  multi_factor: true
-
-description: >
-Final scores are computed using a multi-factor grading system
-that evaluates hypothesis quality, experiment efficiency,
-accuracy improvement, reasoning consistency, and final answer quality.
-  
-  components:
-    - hypothesis_quality
-    - experiment_efficiency
-    - accuracy_improvement
-    - reasoning_consistency
-    - final_answer_quality
-
-# Reward System
-
+# Reward
 reward:
-type: dense
-description: >
-Step-wise rewards provide incremental feedback based on:
-- improvement in experimental results
-- quality of actions (hypothesis, analysis, refinement)
-- efficiency and progression
-Penalties are applied for invalid, redundant, or inefficient actions.
+  type: dense
+  description: >
+    Step-wise rewards based on experiment improvement and reasoning quality.
 
-# Execution Constraints
-
+# Constraints
 constraints:
-max_runtime_minutes: 20
-cpu: 2
-memory_gb: 8
+  max_runtime_minutes: 20
+  cpu: 2
+  memory_gb: 8
 
 # Determinism
-
 determinism:
-enabled: true
-description: >
-All experiment outcomes are deterministic given a fixed seed.
-Controlled noise is applied for medium and hard tasks using
-seeded random generators to ensure reproducibility.
+  enabled: true
+  description: >
+    Environment is deterministic with fixed seed.
 
 # Inference
-
 inference:
-entrypoint: inference.py
-description: >
-Runs baseline agent across all tasks and outputs reproducible scores.
+  entrypoint: inference.py
+  description: >
+    Runs baseline agent across all tasks.
